@@ -95,24 +95,28 @@ fn part2(content: &str) {
                     .get(0)
                     .expect(&format!("Unable to find map of from type {:?}", map_type));
 
-                println!("{:?}:", map_type);
-                for r in ranges.iter() {
-                    println!("\t{r}");
-                }
-
-                println!("------------------------------------>");
+                // println!("{:?} -> {:?}:", map_type, map.to);
+                // ranges.sort_by(|a, b| a.start.cmp(&b.start));
+                // for r in ranges.iter() {
+                //     println!("\t{r}");
+                // }
+                //
+                // println!("------------------------------------>");
 
                 ranges = map.get_to_ranges(&ranges);
                 map_type = map.to.clone();
 
-                for r in ranges.iter() {
-                    println!("\t{r}");
-                }
-
-                println!("<------------------------------------");
+                // ranges.sort_by(|a, b| a.start.cmp(&b.start));
+                //
+                // for r in ranges.iter() {
+                //     println!("\t{r}");
+                // }
+                //
+                // println!("<------------------------------------");
             }
 
             let min_location_of_range = ranges.iter().map(|r| r.start).min().unwrap_or(usize::MAX);
+            println!("Min Location {min_location_of_range}");
             return min_location_of_range;
         })
         .min()
@@ -248,7 +252,7 @@ impl MapEntry {
 
     fn get_to_entry(&self, from_entry: usize) -> Option<usize> {
         if Range::new(from_entry, 0).is_in(&self.from_range) {
-            println!("{from_entry} - {}", self.from_range.start);
+            // println!("{from_entry} - {}", self.from_range.start);
             let offset = from_entry - self.from_range.start;
             return Some(self.to_range.start + offset);
         }
@@ -257,18 +261,15 @@ impl MapEntry {
     }
 
     fn get_range_overlaps(&self, from_range: &Range) -> Option<RangeResult> {
-        if from_range.is_in(&self.from_range) || self.from_range.is_in(from_range) {
-            // if from_range starts before this range then use this range's start
+        if from_range.overlaps(&self.from_range) {
+            // clamp the start and end points of the from range
             let max_start = self.from_range.start.max(from_range.start);
-
-            // if from_range ends before this range then use from_range's end
-            let min_end = self.from_range.end().min(from_range.end());
-
-            // get offset of start of range to this range's start
-            let offset_from_start = max_start - self.from_range.start;
-
+            let min_end = self.from_range.end.min(from_range.end);
             let len = min_end - max_start;
+
+            let offset_from_start = max_start - self.from_range.start;
             let to_range = Range::new(self.to_range.start + offset_from_start, len);
+
 
             // from_range start is before this range's start
             let orphan_before = if max_start != from_range.start {
@@ -281,13 +282,15 @@ impl MapEntry {
             };
 
             // from_range end extends past this range's end
-            let orphan_after = if min_end != from_range.end() {
+            let orphan_after = if min_end != from_range.end {
                 let new_start = min_end + 1;
-                let new_len = from_range.end() - min_end;
+                let new_len = from_range.end - min_end - 1;
                 Some(Range::new(new_start, new_len))
             } else {
                 None
             };
+
+            // println!("{to_range} | {:?} | {:?}", orphan_before, orphan_after);
 
             return Some(RangeResult::new(to_range, orphan_before, orphan_after));
         }
@@ -327,9 +330,9 @@ impl Map {
         return from_entry;
     }
 
-    fn get_to_ranges(&self, from_range: &Vec<Range>) -> Vec<Range> {
+    fn get_to_ranges(&self, from_ranges: &Vec<Range>) -> Vec<Range> {
         let mut ranges = vec![];
-        let mut stack = from_range.clone();
+        let mut stack = from_ranges.clone();
         while stack.len() > 0 {
             let range_to_process = stack.pop().unwrap();
             let mut has_some = false;
@@ -340,7 +343,7 @@ impl Map {
             {
                 if let Some(overlap_result) = entry.get_range_overlaps(&range_to_process) {
                     if let Some(orphan_before) = overlap_result.orphan_before {
-                        ranges.push(orphan_before.clone());
+                        stack.push(orphan_before.clone());
                     }
 
                     ranges.push(overlap_result.overlap.clone());
@@ -355,7 +358,8 @@ impl Map {
             }
 
             if !has_some {
-                ranges.extend(from_range.clone());
+                // println!("Couldn't find match for {range_to_process}");
+                ranges.push(range_to_process.clone());
             }
         }
 
@@ -363,28 +367,75 @@ impl Map {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Range {
     start: usize,
-    len: usize,
+    end: usize,
 }
 
 impl Display for Range {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}-{}", self.start, self.end()))
+        f.write_fmt(format_args!("{}-{}", self.start, self.end))
     }
 }
 
 impl Range {
     fn new(start: usize, len: usize) -> Self {
-        Range { start, len }
-    }
-
-    fn end(&self) -> usize {
-        self.start + self.len
+        Range {
+            start,
+            // len is inclusive of start... doh!
+            end: start + len - 1,
+        }
     }
 
     fn is_in(&self, other: &Self) -> bool {
-        other.start <= self.start && self.start <= other.start + other.len
+        other.start <= self.start && self.start <= other.end
+    }
+
+    fn overlaps(&self, other: &Self) -> bool {
+        self.is_in(other) || other.is_in(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[test]
+    fn it_parses_orphan_before() {
+        let map_entry = MapEntry::new(10, 20, 5);
+        let range = Range::new(5, 10);
+        let result = map_entry.get_range_overlaps(&range);
+
+        assert!(result.is_some());
+        let result = result.unwrap();
+
+        let orphan_before = result.orphan_before;
+        assert!(orphan_before.is_some());
+
+        let orphan_before = orphan_before.unwrap();
+        assert_eq!(5, orphan_before.start);
+        assert_eq!(8, orphan_before.end);
+
+        assert!(result.orphan_after.is_none());
+    }
+
+    #[test]
+    fn it_parses_orphan_after() {
+        let map_entry = MapEntry::new(10, 20, 5);
+        let range = Range::new(12, 10);
+        let result = map_entry.get_range_overlaps(&range);
+
+        assert!(result.is_some());
+        let result = result.unwrap();
+
+        let orphan_after = result.orphan_after;
+        assert!(orphan_after.is_some());
+
+        let orphan_after = orphan_after.unwrap();
+        assert_eq!(15, orphan_after.start);
+        assert_eq!(20, orphan_after.end);
+
+        assert!(result.orphan_before.is_none());
     }
 }
