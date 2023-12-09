@@ -393,7 +393,7 @@ impl Range {
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
+    use crate::day5::*;
 
     #[test]
     fn it_parses_orphan_before() {

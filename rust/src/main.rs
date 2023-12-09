@@ -11,7 +11,8 @@ fn main() {
         1 => panic!("No arguments supplied!"),
         _ => {
             let day = argv[1].as_str();
-            let data = fs::read_to_string(format!("data/actual/{}.txt", day)).unwrap();
+            let data_dir = if let Some(dir) = argv.get(2) { dir } else { "actual" };
+            let data = fs::read_to_string(format!("data/{}/{}.txt", data_dir, day)).unwrap();
 
             match day {
                 "day1" => day1::solve(data),
