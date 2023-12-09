@@ -1,12 +1,6 @@
 use std::collections::HashMap;
 
-fn main() {
-    let input_path = std::env::args()
-        .nth(1)
-        .expect("path to input file is required!");
-
-    let content = std::fs::read_to_string(input_path).expect("unable to read input file as string");
-
+pub fn solve(content: String) {
     let mut cards = content
         .lines()
         .filter(|line| !line.is_empty())
@@ -33,7 +27,10 @@ fn part2(cards: Vec<Card>) {
     for card in cards.iter() {
         let match_count = card.match_count() as u32;
         let accumulated = accumulation_by_card_id.get(&card.id).unwrap_or(&0).clone();
-        println!("card ID: {0}, matches: {match_count}, accumulated: {accumulated}", card.id);
+        println!(
+            "card ID: {0}, matches: {match_count}, accumulated: {accumulated}",
+            card.id
+        );
         for offset in 1..=match_count {
             *accumulation_by_card_id.entry(card.id + offset).or_insert(0) += accumulated;
         }

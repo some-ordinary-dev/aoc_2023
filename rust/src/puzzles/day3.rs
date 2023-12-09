@@ -1,36 +1,14 @@
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-    path::Path,
-};
+use std::collections::HashMap;
 
-fn main() -> std::io::Result<()> {
-    let input_path = std::env::args().nth(1).expect("FAILED: no path provided");
-    let p = Path::new(&input_path);
-
-    if !p.exists() {
-        panic!("invalid file path received");
-    }
-
-    let ext = p.extension();
-    if ext.is_none() || ext.unwrap() != "txt" {
-        panic!("invalid file path received");
-    }
-
-    let file = File::open(p)?;
-
-    let grid = BufReader::new(file)
+pub fn solve(content: String) {
+    let grid = content
         .lines()
-        .map(|l| l.unwrap_or(String::new()))
         .filter(|l| !l.is_empty())
         .map(|l| l.chars().collect::<Vec<_>>())
         .collect::<Vec<_>>();
 
     part1(&grid);
     part2(&grid);
-
-    Ok(())
 }
 
 fn part1(grid: &Vec<Vec<char>>) {

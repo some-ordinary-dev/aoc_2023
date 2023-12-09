@@ -1,38 +1,16 @@
 use lazy_static::lazy_static;
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-    path::Path,
-};
+use std::collections::HashMap;
 
 use regex::Regex;
 
-fn main() -> std::io::Result<()> {
-    let input_path = std::env::args().nth(1).expect("FAILED: no path provided");
-    let p = Path::new(&input_path);
-
-    if !p.exists() {
-        panic!("invalid file path received");
-    }
-
-    let ext = p.extension();
-    if ext.is_none() || ext.unwrap() != "txt" {
-        panic!("invalid file path received");
-    }
-
-    let file = File::open(p)?;
-    let sum: u16 = BufReader::new(file)
+pub fn solve(content: String) {
+    let sum: u16 = content
         .lines()
-        .filter(|line| line.is_ok())
-        .map(|line| line.unwrap())
         .filter(|line| !line.is_empty())
-        .map(|line| parse_digits(&line))
+        .map(|line| parse_digits(line))
         .sum();
 
     println!("sum of calibration values: {sum}");
-
-    Ok(())
 }
 
 lazy_static! {
@@ -42,7 +20,7 @@ lazy_static! {
         Regex::new(r"eno|owt|eerht|ruof|evif|xis|neves|thgie|enin|[0-9]").unwrap();
 }
 
-fn parse_digits(line: &String) -> u16 {
+fn parse_digits(line: &str) -> u16 {
     let mut str = String::new();
 
     let mut map = HashMap::new();

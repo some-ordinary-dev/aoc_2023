@@ -1,33 +1,13 @@
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-    path::Path,
-};
+use std::collections::HashMap;
 
-fn main() -> std::io::Result<()> {
-    let input_path = std::env::args().nth(1).expect("FAILED: no path provided");
-    let p = Path::new(&input_path);
-
-    if !p.exists() {
-        panic!("invalid file path received");
-    }
-
-    let ext = p.extension();
-    if ext.is_none() || ext.unwrap() != "txt" {
-        panic!("invalid file path received");
-    }
-
+pub fn solve(content: String) {
     let mut limits = HashMap::new();
     limits.insert("red", 12);
     limits.insert("green", 13);
     limits.insert("blue", 14);
 
-    let file = File::open(p)?;
-    let sum: u32 = BufReader::new(file)
+    let sum: u32 = content
         .lines()
-        .filter(|line| line.is_ok())
-        .map(|line| line.unwrap())
         .filter(|line| !line.is_empty())
         .map(|line| {
             let parts: Vec<&str> = line.split(":").collect();
@@ -78,15 +58,10 @@ fn main() -> std::io::Result<()> {
                 }
             }
 
-            return min_vals
-                .into_values()
-                .reduce(|acc, e| acc * e)
-                .unwrap_or(0);
+            return min_vals.into_values().reduce(|acc, e| acc * e).unwrap_or(0);
         })
         .sum();
 
     // println!("sum of impossible game IDs {sum}");
     println!("sum of min powers: {sum}");
-
-    Ok(())
 }

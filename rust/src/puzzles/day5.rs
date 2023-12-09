@@ -1,14 +1,8 @@
 use itertools::Itertools;
 use std::{fmt::Display, str::FromStr};
 
-fn main() {
-    let file_path = std::env::args()
-        .nth(1)
-        .expect("REQUIRED: must provide path to input file");
-
-    let content = std::fs::read_to_string(file_path).unwrap();
-
-    // part1(&content);
+pub fn solve(content: String) {
+    part1(&content);
     part2(&content);
 }
 
