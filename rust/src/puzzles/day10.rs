@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use itertools::Itertools;
 
 pub fn solve(content: String) {
-    // part1(&content);
+    part1(&content);
     part2(&content);
 }
 
