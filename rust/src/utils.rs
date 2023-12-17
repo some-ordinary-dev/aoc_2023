@@ -1,6 +1,5 @@
 use std::{
     fmt::{Display, Write},
-    slice::{Iter, IterMut},
     str::Lines,
 };
 

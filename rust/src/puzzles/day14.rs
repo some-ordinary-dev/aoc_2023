@@ -166,9 +166,3 @@ enum CompassDirection {
     East,
     West,
 }
-
-impl CompassDirection {
-    fn is_horizontal(&self) -> bool {
-        self == &CompassDirection::East || self == &CompassDirection::North
-    }
-}
