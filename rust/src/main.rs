@@ -1,4 +1,5 @@
 mod puzzles;
+mod utils;
 
 use std::fs;
 
@@ -27,6 +28,10 @@ fn main() {
                 "day10" => day10::solve(data),
                 "day11" => day11::solve(data),
                 "day12" => day12::solve(data),
+                "day13" => day13::solve(data),
+                "day14" => day14::solve(data),
+                "day15" => day15::solve(data),
+                "day16" => day16::solve(data),
                 _ => todo!("implement {day}"),
             }
         }
