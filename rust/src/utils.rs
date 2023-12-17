@@ -1,4 +1,10 @@
-use std::{str::Lines, fmt::{Display, Write}};
+use std::{
+    fmt::{Display, Write},
+    slice::{Iter, IterMut},
+    str::Lines,
+};
+
+use itertools::Itertools;
 
 pub struct Grid2D<T> {
     height: usize,
@@ -17,9 +23,19 @@ impl Grid2D<char> {
             rows: vec,
         }
     }
+
+    pub fn to_string(&self) -> String {
+        self.rows
+            .iter()
+            .map(|row| row.iter().collect::<String>())
+            .join("\n")
+    }
 }
 
-impl<T> Display for Grid2D<T> where T : Into<String> + Clone {
+impl<T> Display for Grid2D<T>
+where
+    T: Into<String> + Clone,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.rows.iter() {
             for item in row.iter() {
@@ -47,13 +63,7 @@ impl<T> Grid2D<T> {
             return None;
         }
 
-        for y in self.rows.iter().skip(y) {
-            for x in y.iter().skip(x) {
-                return Some(x);
-            }
-        }
-
-        None
+        Some(self.rows.get(y)?.get(x)?)
     }
 
     pub fn replace(&mut self, item: T, x: usize, y: usize) {
@@ -61,13 +71,9 @@ impl<T> Grid2D<T> {
             return;
         }
 
-        for y in self.rows.iter_mut().skip(y) {
-            for x in y.iter_mut().skip(x) {
-                *x = item;
-                return;
-            }
-        }
-
+        let row = self.rows.get_mut(y).unwrap();
+        let x = row.get_mut(x).unwrap();
+        *x = item;
     }
 }
 
@@ -105,13 +111,8 @@ impl<'a, T> Iterator for ColumnIterator<'a, T> {
 
         self.index += 1;
 
-        for item in self.grid.rows.iter().skip(self.index - 1) {
-            for col in item.iter().skip(self.column_index) {
-                return Some(col);
-            }
-        }
-
-        return None;
+        let row = self.grid.rows.get(self.index - 1)?;
+        Some(row.get(self.column_index)?)
     }
 }
 
@@ -131,12 +132,7 @@ impl<'a, T> Iterator for RowIterator<'a, T> {
 
         self.index += 1;
 
-        for item in self.grid.rows.iter().skip(self.row_index) {
-            for col in item.iter().skip(self.index - 1) {
-                return Some(col);
-            }
-        }
-
-        return None;
+        let row = self.grid.rows.get(self.row_index)?;
+        Some(row.get(self.index - 1)?)
     }
 }
