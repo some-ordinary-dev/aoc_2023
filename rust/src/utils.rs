@@ -1,4 +1,4 @@
-use std::str::Lines;
+use std::{str::Lines, fmt::{Display, Write}};
 
 pub struct Grid2D<T> {
     height: usize,
@@ -16,6 +16,20 @@ impl Grid2D<char> {
             width: vec.first().unwrap_or(&Vec::new()).len(),
             rows: vec,
         }
+    }
+}
+
+impl<T> Display for Grid2D<T> where T : Into<String> + Clone {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for row in self.rows.iter() {
+            for item in row.iter() {
+                f.write_str(&item.clone().into())?;
+            }
+
+            f.write_char('\n')?;
+        }
+
+        Ok(())
     }
 }
 
@@ -85,7 +99,7 @@ impl<'a, T> Iterator for ColumnIterator<'a, T> {
     type Item = &'a T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index > self.grid.width {
+        if self.index > self.grid.height {
             return None;
         }
 

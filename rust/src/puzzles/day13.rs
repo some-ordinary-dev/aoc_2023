@@ -34,8 +34,8 @@ fn smudge_score(grid: &mut Grid2D<char>) -> u64 {
     let old_score = reflection_score(grid);
     let old_score_value = old_score.first().unwrap();
 
-    for x in 0..grid.width() {
-        for y in 0..grid.height() {
+    for y in 0..grid.height() {
+        for x in 0..grid.width() {
             let curr = *grid.get(x, y).unwrap();
             let new_ch = match curr {
                 '#' => '.',
@@ -46,11 +46,7 @@ fn smudge_score(grid: &mut Grid2D<char>) -> u64 {
             grid.replace(new_ch, x, y);
 
             let new_score = reflection_score(grid);
-            if !new_score.is_empty()
-                && new_score != old_score
-                && new_score.iter().any(|score| !old_score.contains(score))
-            {
-                println!("{:?} | {:?}", old_score, new_score);
+            if !new_score.is_empty() && new_score != old_score {
                 return new_score
                     .into_iter()
                     .find(|score| score != old_score_value)
@@ -60,7 +56,8 @@ fn smudge_score(grid: &mut Grid2D<char>) -> u64 {
             grid.replace(curr, x, y);
         }
     }
-    return 0;
+
+    todo!()
 }
 
 fn is_vertical_reflection(grid: &Grid2D<char>, index: usize) -> bool {
