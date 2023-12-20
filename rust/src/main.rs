@@ -32,6 +32,8 @@ fn main() {
                 "day14" => day14::solve(data),
                 "day15" => day15::solve(data),
                 "day16" => day16::solve(data),
+                "day17" => day17::solve(data),
+                "day18" => day18::solve(data),
                 _ => todo!("implement {day}"),
             }
         }

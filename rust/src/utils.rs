@@ -33,12 +33,12 @@ impl Grid2D<char> {
 
 impl<T> Display for Grid2D<T>
 where
-    T: Into<String> + Clone,
+    T: Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for row in self.rows.iter() {
             for item in row.iter() {
-                f.write_str(&item.clone().into())?;
+                f.write_fmt(format_args!("{item}"))?;
             }
 
             f.write_char('\n')?;
@@ -49,6 +49,14 @@ where
 }
 
 impl<T> Grid2D<T> {
+    pub fn new(rows: Vec<Vec<T>>) -> Self {
+        Self {
+            height: rows.len(),
+            width: rows.first().unwrap_or(&vec![]).len(),
+            rows,
+        }
+    }
+
     pub fn width(&self) -> usize {
         self.width
     }
@@ -63,6 +71,10 @@ impl<T> Grid2D<T> {
         }
 
         Some(self.rows.get(y)?.get(x)?)
+    }
+
+    pub fn get_mut(&mut self, x: usize, y: usize) -> Option<&mut T> {
+        Some(self.rows.get_mut(y)?.get_mut(x)?)
     }
 
     pub fn replace(&mut self, item: T, x: usize, y: usize) {
@@ -90,6 +102,19 @@ impl<'b, T> Grid2D<T> {
             grid: self,
             column_index,
             index: 0,
+        }
+    }
+}
+
+impl<T> Clone for Grid2D<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            width: self.width,
+            height: self.height,
+            rows: self.rows.clone(),
         }
     }
 }
