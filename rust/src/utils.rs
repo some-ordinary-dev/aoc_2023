@@ -88,6 +88,19 @@ impl<T> Grid2D<T> {
     }
 }
 
+impl<T> Grid2D<T>
+where
+    T: Clone,
+{
+    pub fn with_size(width: usize, height: usize, default: T) -> Self {
+        Self {
+            height,
+            width,
+            rows: vec![vec![default; width]; height],
+        }
+    }
+}
+
 impl<'b, T> Grid2D<T> {
     pub fn row_iterator<'a>(&self, row_index: usize) -> RowIterator<T> {
         RowIterator {
